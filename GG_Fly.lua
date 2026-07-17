@@ -1,6 +1,5 @@
 --// GG SCRIPTS
 --// Owner: Ankro
---// Fly + Noclip + Custom Keybind + Mobile Button + Draggable UI
 
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
@@ -8,10 +7,6 @@ local RunService = game:GetService("RunService")
 
 local Player = Players.LocalPlayer
 local PlayerGui = Player:WaitForChild("PlayerGui")
-
---==================================================
--- SETTINGS
---==================================================
 
 local FlyEnabled = false
 local NoclipEnabled = false
@@ -26,10 +21,6 @@ local BodyVelocity
 local BodyGyro
 local OldAutoRotate
 
---==================================================
--- CHARACTER
---==================================================
-
 local function UpdateCharacter()
 	Character = Player.Character or Player.CharacterAdded:Wait()
 	Humanoid = Character:WaitForChild("Humanoid")
@@ -39,9 +30,9 @@ end
 UpdateCharacter()
 
 Player.CharacterAdded:Connect(function()
-	task.wait(1)
+	FlyEnabled = false
+	NoclipEnabled = false
 
-	-- إيقاف الطيران القديم قبل تحديث الشخصية
 	if BodyVelocity then
 		BodyVelocity:Destroy()
 		BodyVelocity = nil
@@ -52,34 +43,21 @@ Player.CharacterAdded:Connect(function()
 		BodyGyro = nil
 	end
 
-	FlyEnabled = false
+	task.wait(1)
 	UpdateCharacter()
 end)
 
---==================================================
--- REMOVE OLD GUI
---==================================================
-
 local OldGui = PlayerGui:FindFirstChild("GG_SCRIPTS")
-
 if OldGui then
 	OldGui:Destroy()
 end
 
---==================================================
--- COLORS
---==================================================
-
 local Background = Color3.fromRGB(13, 13, 20)
 local Panel = Color3.fromRGB(20, 20, 31)
-local Button = Color3.fromRGB(30, 30, 45)
+local ButtonColor = Color3.fromRGB(30, 30, 45)
 local Accent = Color3.fromRGB(145, 80, 255)
 local White = Color3.fromRGB(255, 255, 255)
 local Gray = Color3.fromRGB(170, 170, 185)
-
---==================================================
--- SCREEN GUI
---==================================================
 
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "GG_SCRIPTS"
@@ -87,12 +65,8 @@ ScreenGui.ResetOnSpawn = false
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 ScreenGui.Parent = PlayerGui
 
---==================================================
--- FLOATING GG BUTTON
---==================================================
-
+--// FLOATING BUTTON
 local FloatingButton = Instance.new("TextButton")
-FloatingButton.Name = "GG_Button"
 FloatingButton.Size = UDim2.new(0, 60, 0, 60)
 FloatingButton.Position = UDim2.new(0, 25, 0.5, -30)
 FloatingButton.BackgroundColor3 = Accent
@@ -108,12 +82,8 @@ local FloatCorner = Instance.new("UICorner")
 FloatCorner.CornerRadius = UDim.new(1, 0)
 FloatCorner.Parent = FloatingButton
 
---==================================================
--- MAIN UI
---==================================================
-
+--// MAIN
 local Main = Instance.new("Frame")
-Main.Name = "Main"
 Main.Size = UDim2.new(0, 650, 0, 410)
 Main.Position = UDim2.new(0.5, -325, 0.5, -205)
 Main.BackgroundColor3 = Background
@@ -127,35 +97,24 @@ MainCorner.Parent = Main
 local MainStroke = Instance.new("UIStroke")
 MainStroke.Color = Accent
 MainStroke.Thickness = 1.5
-MainStroke.Transparency = 0.25
 MainStroke.Parent = Main
 
---==================================================
--- TOGGLE UI WITH LEFT ALT
---==================================================
+--// TOGGLE UI
+local function ToggleUI()
+	Main.Visible = not Main.Visible
+end
+
+FloatingButton.MouseButton1Click:Connect(ToggleUI)
 
 UserInputService.InputBegan:Connect(function(Input, GameProcessed)
-	if GameProcessed then
-		return
-	end
+	if GameProcessed then return end
 
 	if Input.KeyCode == Enum.KeyCode.LeftAlt then
-		Main.Visible = not Main.Visible
+		ToggleUI()
 	end
 end)
 
---==================================================
--- GG BUTTON TOGGLE
---==================================================
-
-FloatingButton.MouseButton1Click:Connect(function()
-	Main.Visible = not Main.Visible
-end)
-
---==================================================
--- DRAG GG BUTTON
---==================================================
-
+--// DRAG FLOATING BUTTON
 local DraggingButton = false
 local ButtonStart
 local ButtonPosition
@@ -179,69 +138,19 @@ FloatingButton.InputEnded:Connect(function(Input)
 end)
 
 UserInputService.InputChanged:Connect(function(Input)
-	if not DraggingButton then
-		return
-	end
-
-	if Input.UserInputType == Enum.UserInputType.MouseMovement
-		or Input.UserInputType == Enum.UserInputType.Touch then
-
+	if DraggingButton then
 		local Delta = Input.Position - ButtonStart
 
 		FloatingButton.Position = UDim2.new(
 			ButtonPosition.X.Scale,
 			ButtonPosition.X.Offset + Delta.X,
-
 			ButtonPosition.Y.Scale,
 			ButtonPosition.Y.Offset + Delta.Y
 		)
 	end
 end)
 
---==================================================
--- DRAG MAIN UI
---==================================================
-
-local DraggingMain = false
-local MainStart
-local MainPosition
-
-Main.InputBegan:Connect(function(Input)
-	if Input.UserInputType == Enum.UserInputType.MouseButton1 then
-		DraggingMain = true
-		MainStart = Input.Position
-		MainPosition = Main.Position
-	end
-end)
-
-Main.InputEnded:Connect(function(Input)
-	if Input.UserInputType == Enum.UserInputType.MouseButton1 then
-		DraggingMain = false
-	end
-end)
-
-UserInputService.InputChanged:Connect(function(Input)
-	if not DraggingMain then
-		return
-	end
-
-	if Input.UserInputType == Enum.UserInputType.MouseMovement then
-		local Delta = Input.Position - MainStart
-
-		Main.Position = UDim2.new(
-			MainPosition.X.Scale,
-			MainPosition.X.Offset + Delta.X,
-
-			MainPosition.Y.Scale,
-			MainPosition.Y.Offset + Delta.Y
-		)
-	end
-end)
-
---==================================================
--- TITLE
---==================================================
-
+--// TITLE
 local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, -80, 0, 40)
 Title.Position = UDim2.new(0, 22, 0, 8)
@@ -264,10 +173,7 @@ Subtitle.Font = Enum.Font.Gotham
 Subtitle.TextXAlignment = Enum.TextXAlignment.Left
 Subtitle.Parent = Main
 
---==================================================
--- CLOSE BUTTON
---==================================================
-
+--// CLOSE
 local Close = Instance.new("TextButton")
 Close.Size = UDim2.new(0, 38, 0, 38)
 Close.Position = UDim2.new(1, -52, 0, 14)
@@ -279,18 +185,11 @@ Close.Font = Enum.Font.GothamBold
 Close.BorderSizePixel = 0
 Close.Parent = Main
 
-local CloseCorner = Instance.new("UICorner")
-CloseCorner.CornerRadius = UDim.new(0, 10)
-CloseCorner.Parent = Close
-
 Close.MouseButton1Click:Connect(function()
 	Main.Visible = false
 end)
 
---==================================================
--- SIDEBAR
---==================================================
-
+--// SIDEBAR
 local Sidebar = Instance.new("Frame")
 Sidebar.Size = UDim2.new(0, 125, 1, -80)
 Sidebar.Position = UDim2.new(0, 15, 0, 70)
@@ -302,10 +201,6 @@ local SidebarCorner = Instance.new("UICorner")
 SidebarCorner.CornerRadius = UDim.new(0, 13)
 SidebarCorner.Parent = Sidebar
 
---==================================================
--- CONTENT
---==================================================
-
 local Content = Instance.new("Frame")
 Content.Size = UDim2.new(1, -165, 1, -80)
 Content.Position = UDim2.new(0, 150, 0, 70)
@@ -316,14 +211,12 @@ local Pages = {}
 
 local function CreatePage(Name)
 	local Page = Instance.new("Frame")
-	Page.Name = Name
 	Page.Size = UDim2.new(1, 0, 1, 0)
 	Page.BackgroundTransparency = 1
 	Page.Visible = false
 	Page.Parent = Content
 
 	Pages[Name] = Page
-
 	return Page
 end
 
@@ -339,28 +232,23 @@ local function SwitchPage(Name)
 	end
 end
 
---==================================================
--- SIDEBAR BUTTONS
---==================================================
-
 local function CreateSideButton(Text, Icon, Position)
-	local ButtonObject = Instance.new("TextButton")
-
-	ButtonObject.Size = UDim2.new(1, -20, 0, 58)
-	ButtonObject.Position = Position
-	ButtonObject.BackgroundColor3 = Button
-	ButtonObject.Text = Icon .. "  " .. Text
-	ButtonObject.TextColor3 = White
-	ButtonObject.TextSize = 14
-	ButtonObject.Font = Enum.Font.GothamBold
-	ButtonObject.BorderSizePixel = 0
-	ButtonObject.Parent = Sidebar
+	local Btn = Instance.new("TextButton")
+	Btn.Size = UDim2.new(1, -20, 0, 58)
+	Btn.Position = Position
+	Btn.BackgroundColor3 = ButtonColor
+	Btn.Text = Icon .. "  " .. Text
+	Btn.TextColor3 = White
+	Btn.TextSize = 14
+	Btn.Font = Enum.Font.GothamBold
+	Btn.BorderSizePixel = 0
+	Btn.Parent = Sidebar
 
 	local Corner = Instance.new("UICorner")
 	Corner.CornerRadius = UDim.new(0, 10)
-	Corner.Parent = ButtonObject
+	Corner.Parent = Btn
 
-	return ButtonObject
+	return Btn
 end
 
 local HomeButton = CreateSideButton("Home", "⌂", UDim2.new(0, 10, 0, 15))
@@ -379,10 +267,7 @@ NoclipButton.MouseButton1Click:Connect(function()
 	SwitchPage("Noclip")
 end)
 
---==================================================
--- HOME PAGE
---==================================================
-
+--// HOME
 local HomeTitle = Instance.new("TextLabel")
 HomeTitle.Size = UDim2.new(1, -30, 0, 45)
 HomeTitle.Position = UDim2.new(0, 15, 0, 15)
@@ -394,21 +279,18 @@ HomeTitle.Font = Enum.Font.GothamBold
 HomeTitle.TextXAlignment = Enum.TextXAlignment.Left
 HomeTitle.Parent = HomePage
 
-local OwnerLabel = Instance.new("TextLabel")
-OwnerLabel.Size = UDim2.new(1, -30, 0, 30)
-OwnerLabel.Position = UDim2.new(0, 15, 0, 65)
-OwnerLabel.BackgroundTransparency = 1
-OwnerLabel.Text = "Owner: Ankro"
-OwnerLabel.TextColor3 = Accent
-OwnerLabel.TextSize = 16
-OwnerLabel.Font = Enum.Font.GothamBold
-OwnerLabel.TextXAlignment = Enum.TextXAlignment.Left
-OwnerLabel.Parent = HomePage
+local Owner = Instance.new("TextLabel")
+Owner.Size = UDim2.new(1, -30, 0, 30)
+Owner.Position = UDim2.new(0, 15, 0, 65)
+Owner.BackgroundTransparency = 1
+Owner.Text = "Owner: Ankro"
+Owner.TextColor3 = Accent
+Owner.TextSize = 16
+Owner.Font = Enum.Font.GothamBold
+Owner.TextXAlignment = Enum.TextXAlignment.Left
+Owner.Parent = HomePage
 
---==================================================
--- FLY PAGE
---==================================================
-
+--// FLY PAGE
 local FlyTitle = Instance.new("TextLabel")
 FlyTitle.Size = UDim2.new(1, -30, 0, 40)
 FlyTitle.Position = UDim2.new(0, 15, 0, 10)
@@ -427,16 +309,12 @@ FlyStatus.BackgroundTransparency = 1
 FlyStatus.Text = "Status: OFF"
 FlyStatus.TextColor3 = Gray
 FlyStatus.TextSize = 15
-FlyStatus.Font = Enum.Font.Gotham
-FlyStatus.TextXAlignment = Enum.TextXAlignment.Left
 FlyStatus.Parent = FlyPage
-
--- MOBILE FLY BUTTON
 
 local FlyToggle = Instance.new("TextButton")
 FlyToggle.Size = UDim2.new(1, -30, 0, 50)
 FlyToggle.Position = UDim2.new(0, 15, 0, 85)
-FlyToggle.BackgroundColor3 = Button
+FlyToggle.BackgroundColor3 = ButtonColor
 FlyToggle.Text = "ENABLE FLY"
 FlyToggle.TextColor3 = White
 FlyToggle.TextSize = 16
@@ -448,8 +326,7 @@ local FlyCorner = Instance.new("UICorner")
 FlyCorner.CornerRadius = UDim.new(0, 10)
 FlyCorner.Parent = FlyToggle
 
--- SPEED
-
+--// SPEED
 local SpeedLabel = Instance.new("TextLabel")
 SpeedLabel.Size = UDim2.new(1, -30, 0, 25)
 SpeedLabel.Position = UDim2.new(0, 15, 0, 150)
@@ -464,7 +341,7 @@ SpeedLabel.Parent = FlyPage
 local SpeedBox = Instance.new("TextBox")
 SpeedBox.Size = UDim2.new(1, -30, 0, 42)
 SpeedBox.Position = UDim2.new(0, 15, 0, 180)
-SpeedBox.BackgroundColor3 = Button
+SpeedBox.BackgroundColor3 = ButtonColor
 SpeedBox.Text = "50"
 SpeedBox.TextColor3 = White
 SpeedBox.TextSize = 16
@@ -472,10 +349,6 @@ SpeedBox.Font = Enum.Font.GothamBold
 SpeedBox.ClearTextOnFocus = false
 SpeedBox.BorderSizePixel = 0
 SpeedBox.Parent = FlyPage
-
-local SpeedCorner = Instance.new("UICorner")
-SpeedCorner.CornerRadius = UDim.new(0, 10)
-SpeedCorner.Parent = SpeedBox
 
 SpeedBox.FocusLost:Connect(function()
 	local Value = tonumber(SpeedBox.Text)
@@ -488,10 +361,7 @@ SpeedBox.FocusLost:Connect(function()
 	SpeedLabel.Text = "Fly Speed: " .. FlySpeed .. " / 100"
 end)
 
---==================================================
--- CUSTOM FLY KEY
---==================================================
-
+--// KEY
 local KeyLabel = Instance.new("TextLabel")
 KeyLabel.Size = UDim2.new(1, -30, 0, 25)
 KeyLabel.Position = UDim2.new(0, 15, 0, 235)
@@ -506,7 +376,7 @@ KeyLabel.Parent = FlyPage
 local KeyBox = Instance.new("TextBox")
 KeyBox.Size = UDim2.new(1, -30, 0, 42)
 KeyBox.Position = UDim2.new(0, 15, 0, 265)
-KeyBox.BackgroundColor3 = Button
+KeyBox.BackgroundColor3 = ButtonColor
 KeyBox.Text = "Q"
 KeyBox.TextColor3 = White
 KeyBox.TextSize = 16
@@ -514,10 +384,6 @@ KeyBox.Font = Enum.Font.GothamBold
 KeyBox.ClearTextOnFocus = false
 KeyBox.BorderSizePixel = 0
 KeyBox.Parent = FlyPage
-
-local KeyCorner = Instance.new("UICorner")
-KeyCorner.CornerRadius = UDim.new(0, 10)
-KeyCorner.Parent = KeyBox
 
 KeyBox.FocusLost:Connect(function()
 	local Text = string.upper(KeyBox.Text)
@@ -532,10 +398,7 @@ KeyBox.FocusLost:Connect(function()
 	end
 end)
 
---==================================================
--- NOCLIP PAGE
---==================================================
-
+--// NOCLIP
 local NoclipTitle = Instance.new("TextLabel")
 NoclipTitle.Size = UDim2.new(1, -30, 0, 45)
 NoclipTitle.Position = UDim2.new(0, 15, 0, 15)
@@ -554,13 +417,12 @@ NoclipStatus.BackgroundTransparency = 1
 NoclipStatus.Text = "Status: OFF"
 NoclipStatus.TextColor3 = Gray
 NoclipStatus.TextSize = 15
-NoclipStatus.Font = Enum.Font.Gotham
 NoclipStatus.Parent = NoclipPage
 
 local NoclipToggle = Instance.new("TextButton")
 NoclipToggle.Size = UDim2.new(1, -30, 0, 50)
 NoclipToggle.Position = UDim2.new(0, 15, 0, 105)
-NoclipToggle.BackgroundColor3 = Button
+NoclipToggle.BackgroundColor3 = ButtonColor
 NoclipToggle.Text = "ENABLE NOCLIP"
 NoclipToggle.TextColor3 = White
 NoclipToggle.TextSize = 16
@@ -568,14 +430,7 @@ NoclipToggle.Font = Enum.Font.GothamBold
 NoclipToggle.BorderSizePixel = 0
 NoclipToggle.Parent = NoclipPage
 
-local NoclipCorner = Instance.new("UICorner")
-NoclipCorner.CornerRadius = UDim.new(0, 10)
-NoclipCorner.Parent = NoclipToggle
-
---==================================================
--- FLY SYSTEM
---==================================================
-
+--// FLY
 local function StartFly()
 	if not Character or not Humanoid or not RootPart then
 		return
@@ -584,20 +439,20 @@ local function StartFly()
 	OldAutoRotate = Humanoid.AutoRotate
 	Humanoid.AutoRotate = false
 
-	Humanoid:ChangeState(Enum.HumanoidStateType.Physics)
-
 	BodyVelocity = Instance.new("BodyVelocity")
-	BodyVelocity.MaxForce = Vector3.new(100000, 100000, 100000)
-	BodyVelocity.P = 10000
-	BodyVelocity.Velocity = Vector3.zero
+	BodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+	BodyVelocity.P = 100000
+	BodyVelocity.Velocity = Vector3.new(0, 3, 0)
 	BodyVelocity.Parent = RootPart
 
 	BodyGyro = Instance.new("BodyGyro")
 	BodyGyro.MaxTorque = Vector3.new(0, math.huge, 0)
-	BodyGyro.P = 100000
-	BodyGyro.D = 1000
+	BodyGyro.P = 1000000
+	BodyGyro.D = 0
 	BodyGyro.CFrame = RootPart.CFrame
 	BodyGyro.Parent = RootPart
+
+	Humanoid:ChangeState(Enum.HumanoidStateType.Physics)
 end
 
 local function StopFly()
@@ -631,64 +486,37 @@ local function ToggleFly()
 	end
 end
 
---==================================================
--- MOBILE BUTTON
---==================================================
-
-FlyToggle.MouseButton1Click:Connect(function()
-	ToggleFly()
-end)
-
---==================================================
--- CUSTOM KEYBOARD KEY
---==================================================
+FlyToggle.MouseButton1Click:Connect(ToggleFly)
 
 UserInputService.InputBegan:Connect(function(Input, GameProcessed)
-	if GameProcessed then
-		return
-	end
+	if GameProcessed then return end
 
 	if Input.KeyCode == FlyKey then
 		ToggleFly()
 	end
 end)
 
---==================================================
--- FLY MOVEMENT
---==================================================
-
+--// FLY MOVEMENT
 RunService.RenderStepped:Connect(function()
-	if not FlyEnabled then
+	if not FlyEnabled or not BodyVelocity or not BodyGyro then
 		return
 	end
 
-	if not BodyVelocity or not BodyGyro then
-		return
-	end
-
-	if not Character or not Humanoid or not RootPart then
+	if not RootPart then
 		return
 	end
 
 	local Camera = workspace.CurrentCamera
 
-	local LookVector = Camera.CFrame.LookVector
-	local FlatLook = Vector3.new(
-		LookVector.X,
-		0,
-		LookVector.Z
-	)
+	local Look = Camera.CFrame.LookVector
+	local FlatLook = Vector3.new(Look.X, 0, Look.Z)
 
 	if FlatLook.Magnitude > 0 then
 		FlatLook = FlatLook.Unit
 	end
 
-	local RightVector = Camera.CFrame.RightVector
-	local FlatRight = Vector3.new(
-		RightVector.X,
-		0,
-		RightVector.Z
-	)
+	local Right = Camera.CFrame.RightVector
+	local FlatRight = Vector3.new(Right.X, 0, Right.Z)
 
 	if FlatRight.Magnitude > 0 then
 		FlatRight = FlatRight.Unit
@@ -723,14 +551,13 @@ RunService.RenderStepped:Connect(function()
 	if Direction.Magnitude > 0 then
 		Direction = Direction.Unit * FlySpeed
 	else
-		Direction = Vector3.zero
+		Direction = Vector3.new(0, 2, 0)
 	end
 
 	BodyVelocity.Velocity = Direction
 
-	-- دوران أفقي فقط لمنع التقليب
 	if FlatLook.Magnitude > 0 then
-		BodyGyro.CFrame = CFrame.lookAt(
+		BodyGyro.CFrame = CFrame.new(
 			RootPart.Position,
 			RootPart.Position + FlatLook
 		)
@@ -739,10 +566,7 @@ RunService.RenderStepped:Connect(function()
 	Humanoid:ChangeState(Enum.HumanoidStateType.Physics)
 end)
 
---==================================================
--- NOCLIP
---==================================================
-
+--// NOCLIP
 NoclipToggle.MouseButton1Click:Connect(function()
 	NoclipEnabled = not NoclipEnabled
 
