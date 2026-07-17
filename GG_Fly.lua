@@ -449,6 +449,7 @@ local function StartFly()
 
 	OldAutoRotate = Humanoid.AutoRotate
 
+	-- تثبيت الشخصية أثناء الطيران فقط
 	Humanoid.AutoRotate = false
 	Humanoid.PlatformStand = true
 	Humanoid:ChangeState(Enum.HumanoidStateType.Physics)
@@ -479,6 +480,7 @@ local function StopFly()
 	end
 
 	if Humanoid then
+		-- يرجع الحركة الطبيعية بعد إيقاف الطيران
 		Humanoid.PlatformStand = false
 		Humanoid.AutoRotate = OldAutoRotate ~= nil and OldAutoRotate or true
 		Humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
@@ -577,7 +579,7 @@ RunService.RenderStepped:Connect(function()
 
 	BodyVelocity.Velocity = Direction
 
-	-- تثبيت الشخصية على اتجاه الكاميرا
+	-- اتجاه الشخصية مع الكاميرا بدون قلبان
 	if FlatLook.Magnitude > 0 then
 		BodyGyro.CFrame = CFrame.lookAt(
 			RootPart.Position,
@@ -585,6 +587,7 @@ RunService.RenderStepped:Connect(function()
 		)
 	end
 
+	-- يفضل التثبيت أثناء الطيران فقط
 	Humanoid.PlatformStand = true
 	Humanoid:ChangeState(Enum.HumanoidStateType.Physics)
 end)
