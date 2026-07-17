@@ -579,3 +579,11 @@ RunService.Stepped:Connect(function()
 		end
 	end
 end)
+
+UserInputService.InputBegan:Connect(function(Input, GameProcessed)
+	if GameProcessed then return end
+
+	if Input.KeyCode == Enum.KeyCode.LeftAlt then
+		Main.Visible = not Main.Visible
+	end
+end)
