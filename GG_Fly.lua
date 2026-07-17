@@ -1,21 +1,16 @@
 --// GG SCRIPTS
 --// Owner: Ankro
---// Dark Neon UI
 --// Fly + Noclip
+--// Floating Toggle Button
 
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 
 local Player = Players.LocalPlayer
+local PlayerGui = Player:WaitForChild("PlayerGui")
 
--- إزالة الواجهة القديمة لو موجودة
-local OldGui = Player.PlayerGui:FindFirstChild("GG_SCRIPTS")
-if OldGui then
-	OldGui:Destroy()
-end
-
---// VARIABLES
+--// SETTINGS
 local FlyEnabled = false
 local NoclipEnabled = false
 local FlySpeed = 50
@@ -35,7 +30,17 @@ UpdateCharacter()
 Player.CharacterAdded:Connect(function()
 	task.wait(1)
 	UpdateCharacter()
+
+	if FlyEnabled then
+		FlyEnabled = false
+	end
 end)
+
+--// REMOVE OLD GUI
+local OldGui = PlayerGui:FindFirstChild("GG_SCRIPTS")
+if OldGui then
+	OldGui:Destroy()
+end
 
 --// COLORS
 local Background = Color3.fromRGB(13, 13, 20)
@@ -50,7 +55,71 @@ local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "GG_SCRIPTS"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-ScreenGui.Parent = Player.PlayerGui
+ScreenGui.Parent = PlayerGui
+
+--// FLOATING BUTTON
+local FloatingButton = Instance.new("TextButton")
+FloatingButton.Name = "GG_FloatingButton"
+FloatingButton.Size = UDim2.new(0, 58, 0, 58)
+FloatingButton.Position = UDim2.new(0, 25, 0.5, -29)
+FloatingButton.BackgroundColor3 = Accent
+FloatingButton.Text = "GG"
+FloatingButton.TextColor3 = White
+FloatingButton.TextSize = 18
+FloatingButton.Font = Enum.Font.GothamBold
+FloatingButton.BorderSizePixel = 0
+FloatingButton.ZIndex = 10
+FloatingButton.Parent = ScreenGui
+
+local FloatingCorner = Instance.new("UICorner")
+FloatingCorner.CornerRadius = UDim.new(1, 0)
+FloatingCorner.Parent = FloatingButton
+
+local FloatingStroke = Instance.new("UIStroke")
+FloatingStroke.Color = White
+FloatingStroke.Transparency = 0.7
+FloatingStroke.Thickness = 1.5
+FloatingStroke.Parent = FloatingButton
+
+--// DRAG FLOATING BUTTON
+local DraggingButton = false
+local ButtonDragStart
+local ButtonStartPosition
+
+FloatingButton.InputBegan:Connect(function(Input)
+	if Input.UserInputType == Enum.UserInputType.MouseButton1
+		or Input.UserInputType == Enum.UserInputType.Touch then
+
+		DraggingButton = true
+		ButtonDragStart = Input.Position
+		ButtonStartPosition = FloatingButton.Position
+	end
+end)
+
+FloatingButton.InputEnded:Connect(function(Input)
+	if Input.UserInputType == Enum.UserInputType.MouseButton1
+		or Input.UserInputType == Enum.UserInputType.Touch then
+
+		DraggingButton = false
+	end
+end)
+
+UserInputService.InputChanged:Connect(function(Input)
+	if DraggingButton then
+		if Input.UserInputType == Enum.UserInputType.MouseMovement
+			or Input.UserInputType == Enum.UserInputType.Touch then
+
+			local Delta = Input.Position - ButtonDragStart
+
+			FloatingButton.Position = UDim2.new(
+				ButtonStartPosition.X.Scale,
+				ButtonStartPosition.X.Offset + Delta.X,
+				ButtonStartPosition.Y.Scale,
+				ButtonStartPosition.Y.Offset + Delta.Y
+			)
+		end
+	end
+end)
 
 --// MAIN WINDOW
 local Main = Instance.new("Frame")
@@ -58,6 +127,7 @@ Main.Size = UDim2.new(0, 650, 0, 410)
 Main.Position = UDim2.new(0.5, -325, 0.5, -205)
 Main.BackgroundColor3 = Background
 Main.BorderSizePixel = 0
+Main.Visible = true
 Main.Parent = ScreenGui
 
 local MainCorner = Instance.new("UICorner")
@@ -70,7 +140,12 @@ MainStroke.Thickness = 1.5
 MainStroke.Transparency = 0.35
 MainStroke.Parent = Main
 
---// DRAG SYSTEM
+--// SHOW/HIDE UI
+FloatingButton.MouseButton1Click:Connect(function()
+	Main.Visible = not Main.Visible
+end)
+
+--// DRAG MAIN WINDOW
 local Dragging = false
 local DragStart
 local StartPosition
@@ -102,7 +177,7 @@ UserInputService.InputChanged:Connect(function(Input)
 	end
 end)
 
---// TOP BAR
+--// TITLE
 local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, -80, 0, 55)
 Title.Position = UDim2.new(0, 22, 0, 5)
@@ -125,7 +200,7 @@ Subtitle.Font = Enum.Font.Gotham
 Subtitle.TextXAlignment = Enum.TextXAlignment.Left
 Subtitle.Parent = Main
 
---// CLOSE BUTTON
+--// CLOSE
 local Close = Instance.new("TextButton")
 Close.Size = UDim2.new(0, 38, 0, 38)
 Close.Position = UDim2.new(1, -52, 0, 14)
@@ -142,7 +217,7 @@ CloseCorner.CornerRadius = UDim.new(0, 10)
 CloseCorner.Parent = Close
 
 Close.MouseButton1Click:Connect(function()
-	ScreenGui:Destroy()
+	Main.Visible = false
 end)
 
 --// SIDEBAR
@@ -157,7 +232,6 @@ local SidebarCorner = Instance.new("UICorner")
 SidebarCorner.CornerRadius = UDim.new(0, 13)
 SidebarCorner.Parent = Sidebar
 
---// CONTENT
 local Content = Instance.new("Frame")
 Content.Size = UDim2.new(1, -165, 1, -80)
 Content.Position = UDim2.new(0, 150, 0, 70)
@@ -190,7 +264,6 @@ local function SwitchPage(Name)
 	end
 end
 
---// SIDEBAR BUTTON
 local function CreateSideButton(Text, Icon, Position)
 	local Btn = Instance.new("TextButton")
 	Btn.Size = UDim2.new(1, -20, 0, 58)
@@ -226,47 +299,28 @@ NoclipButton.MouseButton1Click:Connect(function()
 	SwitchPage("Noclip")
 end)
 
---// LABEL FUNCTION
-local function CreateLabel(Text, Position, Size, TextSize)
-	local Label = Instance.new("TextLabel")
-	Label.Size = Size
-	Label.Position = Position
-	Label.BackgroundTransparency = 1
-	Label.Text = Text
-	Label.TextColor3 = White
-	Label.TextSize = TextSize
-	Label.Font = Enum.Font.GothamBold
-	Label.TextXAlignment = Enum.TextXAlignment.Left
-	Label.Parent = HomePage
-	return Label
-end
-
 --// HOME
-CreateLabel(
-	"Welcome to GG Scripts",
-	UDim2.new(0, 15, 0, 15),
-	UDim2.new(1, -30, 0, 45),
-	25
-)
+local HomeTitle = Instance.new("TextLabel")
+HomeTitle.Size = UDim2.new(1, -30, 0, 45)
+HomeTitle.Position = UDim2.new(0, 15, 0, 15)
+HomeTitle.BackgroundTransparency = 1
+HomeTitle.Text = "Welcome to GG Scripts"
+HomeTitle.TextColor3 = White
+HomeTitle.TextSize = 25
+HomeTitle.Font = Enum.Font.GothamBold
+HomeTitle.TextXAlignment = Enum.TextXAlignment.Left
+HomeTitle.Parent = HomePage
 
-CreateLabel(
-	"Owner: Ankro",
-	UDim2.new(0, 15, 0, 65),
-	UDim2.new(1, -30, 0, 30),
-	16
-).TextColor3 = Accent
-
-local HomeInfo = Instance.new("TextLabel")
-HomeInfo.Size = UDim2.new(1, -30, 0, 90)
-HomeInfo.Position = UDim2.new(0, 15, 0, 115)
-HomeInfo.BackgroundTransparency = 1
-HomeInfo.Text = "Welcome to your personal utility panel.\nChoose a tool from the sidebar to get started."
-HomeInfo.TextColor3 = Gray
-HomeInfo.TextSize = 15
-HomeInfo.Font = Enum.Font.Gotham
-HomeInfo.TextWrapped = true
-HomeInfo.TextXAlignment = Enum.TextXAlignment.Left
-HomeInfo.Parent = HomePage
+local Owner = Instance.new("TextLabel")
+Owner.Size = UDim2.new(1, -30, 0, 30)
+Owner.Position = UDim2.new(0, 15, 0, 65)
+Owner.BackgroundTransparency = 1
+Owner.Text = "Owner: Ankro"
+Owner.TextColor3 = Accent
+Owner.TextSize = 16
+Owner.Font = Enum.Font.GothamBold
+Owner.TextXAlignment = Enum.TextXAlignment.Left
+Owner.Parent = HomePage
 
 --// FLY PAGE
 local FlyTitle = Instance.new("TextLabel")
@@ -385,18 +439,30 @@ NoclipCorner.Parent = NoclipToggle
 --// FLY SYSTEM
 local BodyVelocity
 local BodyGyro
+local OldAutoRotate
 
 local function StartFly()
-	if not RootPart then return end
+	if not Character or not Humanoid or not RootPart then
+		return
+	end
+
+	OldAutoRotate = Humanoid.AutoRotate
+
+	-- منع حالة السقوط
+	Humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+	Humanoid.AutoRotate = false
 
 	BodyVelocity = Instance.new("BodyVelocity")
-	BodyVelocity.MaxForce = Vector3.new(100000, 100000, 100000)
+	BodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+	BodyVelocity.P = 10000
 	BodyVelocity.Velocity = Vector3.zero
 	BodyVelocity.Parent = RootPart
 
 	BodyGyro = Instance.new("BodyGyro")
-	BodyGyro.MaxTorque = Vector3.new(100000, 100000, 100000)
+	BodyGyro.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
 	BodyGyro.P = 10000
+	BodyGyro.D = 500
+	BodyGyro.CFrame = RootPart.CFrame
 	BodyGyro.Parent = RootPart
 end
 
@@ -410,6 +476,11 @@ local function StopFly()
 		BodyGyro:Destroy()
 		BodyGyro = nil
 	end
+
+	if Humanoid then
+		Humanoid.AutoRotate = OldAutoRotate ~= nil and OldAutoRotate or true
+		Humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+	end
 end
 
 FlyToggle.MouseButton1Click:Connect(function()
@@ -419,50 +490,72 @@ FlyToggle.MouseButton1Click:Connect(function()
 		FlyToggle.Text = "DISABLE FLY"
 		FlyStatus.Text = "Status: ON"
 		FlyStatus.TextColor3 = Accent
+
 		StartFly()
 	else
 		FlyToggle.Text = "ENABLE FLY"
 		FlyStatus.Text = "Status: OFF"
 		FlyStatus.TextColor3 = Gray
+
 		StopFly()
 	end
 end)
 
+--// FLY MOVEMENT
 RunService.RenderStepped:Connect(function()
-	if FlyEnabled and BodyVelocity and BodyGyro then
-		local Camera = workspace.CurrentCamera
-		local Direction = Vector3.zero
-
-		if UserInputService:IsKeyDown(Enum.KeyCode.W) then
-			Direction += Camera.CFrame.LookVector
-		end
-
-		if UserInputService:IsKeyDown(Enum.KeyCode.S) then
-			Direction -= Camera.CFrame.LookVector
-		end
-
-		if UserInputService:IsKeyDown(Enum.KeyCode.A) then
-			Direction -= Camera.CFrame.RightVector
-		end
-
-		if UserInputService:IsKeyDown(Enum.KeyCode.D) then
-			Direction += Camera.CFrame.RightVector
-		end
-
-		if UserInputService:IsKeyDown(Enum.KeyCode.Space) then
-			Direction += Vector3.new(0, 1, 0)
-		end
-
-		if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then
-			Direction -= Vector3.new(0, 1, 0)
-		end
-
-		BodyVelocity.Velocity = Direction * FlySpeed
-		BodyGyro.CFrame = Camera.CFrame
+	if not FlyEnabled or not BodyVelocity or not BodyGyro then
+		return
 	end
+
+	if not Character or not Humanoid or not RootPart then
+		return
+	end
+
+	local Camera = workspace.CurrentCamera
+	local Direction = Vector3.zero
+
+	if UserInputService:IsKeyDown(Enum.KeyCode.W) then
+		Direction += Camera.CFrame.LookVector
+	end
+
+	if UserInputService:IsKeyDown(Enum.KeyCode.S) then
+		Direction -= Camera.CFrame.LookVector
+	end
+
+	if UserInputService:IsKeyDown(Enum.KeyCode.A) then
+		Direction -= Camera.CFrame.RightVector
+	end
+
+	if UserInputService:IsKeyDown(Enum.KeyCode.D) then
+		Direction += Camera.CFrame.RightVector
+	end
+
+	if UserInputService:IsKeyDown(Enum.KeyCode.Space) then
+		Direction += Vector3.new(0, 1, 0)
+	end
+
+	if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then
+		Direction -= Vector3.new(0, 1, 0)
+	end
+
+	if Direction.Magnitude > 0 then
+		Direction = Direction.Unit * FlySpeed
+	else
+		Direction = Vector3.zero
+	end
+
+	BodyVelocity.Velocity = Direction
+
+	-- اتجاه الشخصية مع الكاميرا
+	BodyGyro.CFrame = CFrame.new(
+		RootPart.Position,
+		RootPart.Position + Camera.CFrame.LookVector
+	)
+
+	Humanoid:ChangeState(Enum.HumanoidStateType.Physics)
 end)
 
---// NOCLIP SYSTEM
+--// NOCLIP
 NoclipToggle.MouseButton1Click:Connect(function()
 	NoclipEnabled = not NoclipEnabled
 
