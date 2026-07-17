@@ -1,5 +1,6 @@
---// GG SCRIPTS - ROBLOX STUDIO
---// Fly + Noclip + LeftAlt UI Toggle + Custom Fly Key
+--// GG SCRIPTS
+--// Owner: Ankro
+--// Fly + Noclip + Custom Key + Draggable UI
 
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
@@ -8,13 +9,8 @@ local RunService = game:GetService("RunService")
 local Player = Players.LocalPlayer
 local PlayerGui = Player:WaitForChild("PlayerGui")
 
---==================================================
--- SETTINGS
---==================================================
-
 local FlyEnabled = false
 local NoclipEnabled = false
-
 local FlySpeed = 50
 local FlyKey = Enum.KeyCode.Q
 
@@ -24,6 +20,7 @@ local RootPart
 
 local BodyVelocity
 local BodyGyro
+local OldAutoRotate
 
 --==================================================
 -- CHARACTER
@@ -51,7 +48,7 @@ Player.CharacterAdded:Connect(function()
 		BodyGyro = nil
 	end
 
-	task.wait(0.5)
+	task.wait(1)
 	UpdateCharacter()
 end)
 
@@ -91,8 +88,8 @@ ScreenGui.Parent = PlayerGui
 --==================================================
 
 local FloatingButton = Instance.new("TextButton")
-FloatingButton.Size = UDim2.new(0, 58, 0, 58)
-FloatingButton.Position = UDim2.new(0, 25, 0.5, -29)
+FloatingButton.Size = UDim2.new(0, 60, 0, 60)
+FloatingButton.Position = UDim2.new(0, 25, 0.5, -30)
 FloatingButton.BackgroundColor3 = Accent
 FloatingButton.Text = "GG"
 FloatingButton.TextColor3 = White
@@ -107,7 +104,7 @@ FloatCorner.CornerRadius = UDim.new(1, 0)
 FloatCorner.Parent = FloatingButton
 
 --==================================================
--- MAIN WINDOW
+-- MAIN
 --==================================================
 
 local Main = Instance.new("Frame")
@@ -127,7 +124,7 @@ MainStroke.Thickness = 1.5
 MainStroke.Parent = Main
 
 --==================================================
--- UI TOGGLE
+-- TOGGLE UI
 --==================================================
 
 local function ToggleUI()
@@ -174,7 +171,6 @@ end)
 
 UserInputService.InputChanged:Connect(function(Input)
 	if DraggingButton then
-
 		local Delta = Input.Position - ButtonStart
 
 		FloatingButton.Position = UDim2.new(
@@ -192,7 +188,7 @@ end)
 --==================================================
 
 local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, -80, 0, 45)
+Title.Size = UDim2.new(1, -80, 0, 40)
 Title.Position = UDim2.new(0, 22, 0, 8)
 Title.BackgroundTransparency = 1
 Title.Text = "GG SCRIPTS"
@@ -206,7 +202,7 @@ local Subtitle = Instance.new("TextLabel")
 Subtitle.Size = UDim2.new(1, -80, 0, 25)
 Subtitle.Position = UDim2.new(0, 24, 0, 38)
 Subtitle.BackgroundTransparency = 1
-Subtitle.Text = "Ankro's Utility Panel"
+Subtitle.Text = "Owner: Ankro"
 Subtitle.TextColor3 = Gray
 Subtitle.TextSize = 12
 Subtitle.Font = Enum.Font.Gotham
@@ -347,29 +343,28 @@ Owner.Parent = HomePage
 --==================================================
 
 local FlyTitle = Instance.new("TextLabel")
-FlyTitle.Size = UDim2.new(1, -30, 0, 45)
-FlyTitle.Position = UDim2.new(0, 15, 0, 15)
+FlyTitle.Size = UDim2.new(1, -30, 0, 40)
+FlyTitle.Position = UDim2.new(0, 15, 0, 10)
 FlyTitle.BackgroundTransparency = 1
 FlyTitle.Text = "✈  Fly Control"
 FlyTitle.TextColor3 = White
-FlyTitle.TextSize = 25
+FlyTitle.TextSize = 24
 FlyTitle.Font = Enum.Font.GothamBold
 FlyTitle.TextXAlignment = Enum.TextXAlignment.Left
 FlyTitle.Parent = FlyPage
 
 local FlyStatus = Instance.new("TextLabel")
-FlyStatus.Size = UDim2.new(1, -30, 0, 30)
-FlyStatus.Position = UDim2.new(0, 15, 0, 60)
+FlyStatus.Size = UDim2.new(1, -30, 0, 25)
+FlyStatus.Position = UDim2.new(0, 15, 0, 50)
 FlyStatus.BackgroundTransparency = 1
 FlyStatus.Text = "Status: OFF"
 FlyStatus.TextColor3 = Gray
 FlyStatus.TextSize = 15
-FlyStatus.TextXAlignment = Enum.TextXAlignment.Left
 FlyStatus.Parent = FlyPage
 
 local FlyToggle = Instance.new("TextButton")
 FlyToggle.Size = UDim2.new(1, -30, 0, 50)
-FlyToggle.Position = UDim2.new(0, 15, 0, 100)
+FlyToggle.Position = UDim2.new(0, 15, 0, 85)
 FlyToggle.BackgroundColor3 = ButtonColor
 FlyToggle.Text = "ENABLE FLY"
 FlyToggle.TextColor3 = White
@@ -387,19 +382,19 @@ FlyCorner.Parent = FlyToggle
 --==================================================
 
 local SpeedLabel = Instance.new("TextLabel")
-SpeedLabel.Size = UDim2.new(1, -30, 0, 30)
-SpeedLabel.Position = UDim2.new(0, 15, 0, 170)
+SpeedLabel.Size = UDim2.new(1, -30, 0, 25)
+SpeedLabel.Position = UDim2.new(0, 15, 0, 150)
 SpeedLabel.BackgroundTransparency = 1
 SpeedLabel.Text = "Fly Speed: 50 / 100"
 SpeedLabel.TextColor3 = White
-SpeedLabel.TextSize = 16
+SpeedLabel.TextSize = 15
 SpeedLabel.Font = Enum.Font.GothamBold
 SpeedLabel.TextXAlignment = Enum.TextXAlignment.Left
 SpeedLabel.Parent = FlyPage
 
 local SpeedBox = Instance.new("TextBox")
-SpeedBox.Size = UDim2.new(1, -30, 0, 45)
-SpeedBox.Position = UDim2.new(0, 15, 0, 210)
+SpeedBox.Size = UDim2.new(1, -30, 0, 42)
+SpeedBox.Position = UDim2.new(0, 15, 0, 180)
 SpeedBox.BackgroundColor3 = ButtonColor
 SpeedBox.Text = "50"
 SpeedBox.TextColor3 = White
@@ -421,12 +416,12 @@ SpeedBox.FocusLost:Connect(function()
 end)
 
 --==================================================
--- CUSTOM FLY KEY
+-- CUSTOM KEY
 --==================================================
 
 local KeyLabel = Instance.new("TextLabel")
 KeyLabel.Size = UDim2.new(1, -30, 0, 25)
-KeyLabel.Position = UDim2.new(0, 15, 0, 265)
+KeyLabel.Position = UDim2.new(0, 15, 0, 235)
 KeyLabel.BackgroundTransparency = 1
 KeyLabel.Text = "Fly Key: Q"
 KeyLabel.TextColor3 = White
@@ -437,7 +432,7 @@ KeyLabel.Parent = FlyPage
 
 local KeyBox = Instance.new("TextBox")
 KeyBox.Size = UDim2.new(1, -30, 0, 42)
-KeyBox.Position = UDim2.new(0, 15, 0, 295)
+KeyBox.Position = UDim2.new(0, 15, 0, 265)
 KeyBox.BackgroundColor3 = ButtonColor
 KeyBox.Text = "Q"
 KeyBox.TextColor3 = White
@@ -461,7 +456,7 @@ KeyBox.FocusLost:Connect(function()
 end)
 
 --==================================================
--- NOCLIP PAGE
+-- NOCLIP
 --==================================================
 
 local NoclipTitle = Instance.new("TextLabel")
@@ -496,7 +491,7 @@ NoclipToggle.BorderSizePixel = 0
 NoclipToggle.Parent = NoclipPage
 
 --==================================================
--- FLY SYSTEM
+-- START FLY
 --==================================================
 
 local function StartFly()
@@ -504,19 +499,28 @@ local function StartFly()
 		return
 	end
 
+	OldAutoRotate = Humanoid.AutoRotate
+	Humanoid.AutoRotate = false
+
 	BodyVelocity = Instance.new("BodyVelocity")
-	BodyVelocity.MaxForce = Vector3.new(1e9, 1e9, 1e9)
-	BodyVelocity.P = 1e6
+	BodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+	BodyVelocity.P = 100000
 	BodyVelocity.Velocity = Vector3.zero
 	BodyVelocity.Parent = RootPart
 
 	BodyGyro = Instance.new("BodyGyro")
-	BodyGyro.MaxTorque = Vector3.new(1e9, 1e9, 1e9)
-	BodyGyro.P = 1e6
-	BodyGyro.D = 10000
+	BodyGyro.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+	BodyGyro.P = 1000000
+	BodyGyro.D = 0
 	BodyGyro.CFrame = RootPart.CFrame
 	BodyGyro.Parent = RootPart
+
+	Humanoid:ChangeState(Enum.HumanoidStateType.Physics)
 end
+
+--==================================================
+-- STOP FLY
+--==================================================
 
 local function StopFly()
 	if BodyVelocity then
@@ -530,17 +534,14 @@ local function StopFly()
 	end
 
 	if Humanoid then
-		Humanoid.AutoRotate = true
-		Humanoid.PlatformStand = false
-		Humanoid.Sit = false
+		Humanoid.AutoRotate = OldAutoRotate ~= nil and OldAutoRotate or true
 		Humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
 	end
-
-	if RootPart then
-		RootPart.AssemblyLinearVelocity = Vector3.zero
-		RootPart.AssemblyAngularVelocity = Vector3.zero
-	end
 end
+
+--==================================================
+-- TOGGLE FLY
+--==================================================
 
 local function ToggleFly()
 	FlyEnabled = not FlyEnabled
@@ -548,14 +549,10 @@ local function ToggleFly()
 	if FlyEnabled then
 		FlyToggle.Text = "DISABLE FLY"
 		FlyStatus.Text = "Status: ON"
-		FlyStatus.TextColor3 = Accent
-
 		StartFly()
 	else
 		FlyToggle.Text = "ENABLE FLY"
 		FlyStatus.Text = "Status: OFF"
-		FlyStatus.TextColor3 = Gray
-
 		StopFly()
 	end
 end
@@ -563,7 +560,7 @@ end
 FlyToggle.MouseButton1Click:Connect(ToggleFly)
 
 --==================================================
--- KEYBOARD FLY TOGGLE
+-- CUSTOM KEY
 --==================================================
 
 UserInputService.InputBegan:Connect(function(Input, GameProcessed)
@@ -589,7 +586,7 @@ RunService.RenderStepped:Connect(function()
 		return
 	end
 
-	if not RootPart then
+	if not RootPart or not Humanoid then
 		return
 	end
 
@@ -598,7 +595,6 @@ RunService.RenderStepped:Connect(function()
 
 	local Direction = Vector3.zero
 
-	-- الحركة تتبع الكاميرا بالكامل
 	if UserInputService:IsKeyDown(Enum.KeyCode.W) then
 		Direction += CameraCFrame.LookVector
 	end
@@ -629,11 +625,10 @@ RunService.RenderStepped:Connect(function()
 
 	BodyVelocity.Velocity = Direction
 
-	-- الشخصية تتبع اتجاه الكاميرا فوق وتحت
-	BodyGyro.CFrame = CFrame.lookAt(
-		RootPart.Position,
-		RootPart.Position + CameraCFrame.LookVector
-	)
+	-- الجسم يتبع الكاميرا بالكامل
+	BodyGyro.CFrame = CameraCFrame
+
+	Humanoid:ChangeState(Enum.HumanoidStateType.Physics)
 end)
 
 --==================================================
@@ -646,11 +641,9 @@ NoclipToggle.MouseButton1Click:Connect(function()
 	if NoclipEnabled then
 		NoclipToggle.Text = "DISABLE NOCLIP"
 		NoclipStatus.Text = "Status: ON"
-		NoclipStatus.TextColor3 = Accent
 	else
 		NoclipToggle.Text = "ENABLE NOCLIP"
 		NoclipStatus.Text = "Status: OFF"
-		NoclipStatus.TextColor3 = Gray
 	end
 end)
 
